@@ -1,0 +1,67 @@
+// Use or create the database
+use schoolDB;
+
+// Insert sample data into Teachers collection
+db.Teachers.insertMany([
+    { Tname: "Praveen", dno: 1, dname: "Computer", experience: 8, salary: 12000, date_of_joining: new Date("2015-06-15") },
+    { Tname: "Sunita", dno: 2, dname: "IT", experience: 5, salary: 11000, date_of_joining: new Date("2018-09-20") },
+    { Tname: "Rahul", dno: 3, dname: "E&TC", experience: 6, salary: 10000, date_of_joining: new Date("2016-02-12") },
+    { Tname: "Sakshi", dno: 4, dname: "Computer", experience: 3, salary: 9000, date_of_joining: new Date("2021-01-10") },
+    { Tname: "Rohit", dno: 5, dname: "Computer", experience: 7, salary: 13000, date_of_joining: new Date("2014-08-08") }
+]);
+
+// Insert sample data into Students collection
+db.Students.insertMany([
+    { Sname: "Amit", roll_no: 1, class: "10th" },
+    { Sname: "Neha", roll_no: 2, class: "10th" },
+    { Sname: "XYZ", roll_no: 3, class: "12th" }
+]);
+
+// Query 1: Find all teachers alphabetically.
+print("Teachers sorted alphabetically:");
+db.Teachers.find().sort({ Tname: 1 }).forEach(printjson);
+
+// Query 2: Find all teachers in the Computer department.
+print("Teachers in Computer department:");
+db.Teachers.find({ dname: "Computer" }).forEach(printjson);
+
+// Query 3: Find all teachers in Computer, IT, and E&TC departments.
+print("Teachers in Computer, IT, and E&TC departments:");
+db.Teachers.find({ dname: { $in: ["Computer", "IT", "E&TC"] } }).forEach(printjson);
+
+// Query 4: Find all teachers in Computer, IT, and E&TC departments with salary >= 10000.
+print("Teachers in Computer, IT, and E&TC departments with salary >= 10000:");
+db.Teachers.find({ dname: { $in: ["Computer", "IT", "E&TC"] }, salary: { $gte: 10000 } }).forEach(printjson);
+
+// Query 5: Find student information where roll_no = 2 or Sname = "XYZ".
+print("Student with roll_no = 2 or Sname = 'XYZ':");
+db.Students.find({ $or: [ { roll_no: 2 }, { Sname: "XYZ" } ] }).forEach(printjson);
+
+// Query 6: Update the experience of teacher "Praveen" to 10 years (insert if not exists).
+db.Teachers.updateOne(
+    { Tname: "Praveen" },
+    { $set: { experience: 10 } },
+    { upsert: true }
+);
+print("Updated experience of Praveen to 10 years: ");
+db.Teachers.find({ Tname: "Praveen" }).forEach(printjson);
+
+// Query 7: Update the department of all teachers in the IT department to "COMP".
+db.Teachers.updateMany(
+    { dname: "IT" },
+    { $set: { dname: "COMP" } }
+);
+print("Updated IT department teachers to COMP:");
+db.Teachers.find({ dname: "COMP" }).forEach(printjson);
+
+// Query 8: Find teacher names and their experience.
+print("Teacher names and experience:");
+db.Teachers.find({}, { Tname: 1, experience: 1, _id: 0 }).forEach(printjson);
+
+// Query 9: Delete all teachers in the IT department.
+db.Teachers.deleteMany({ dname: "IT" });
+print("Deleted teachers in IT department.");
+
+// Query 10: Display the first 3 documents in ascending order using pretty().
+print("First 3 teachers sorted alphabetically:");
+db.Teachers.find().sort({ Tname: 1 }).limit(3).pretty();

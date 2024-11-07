@@ -1,0 +1,59 @@
+CREATE DATABASE student_db;
+
+USE student_db;
+
+CREATE TABLE O_Roll_Call( roll_no INT PRIMARY KEY, student_name VARCHAR(100));
+
+CREATE TABLE N_Roll_Call( roll_no INT, student_name VARCHAR(100));
+
+INSERT INTO O_Roll_Call (roll_no, student_name) VALUES(1, 'Alice'),(2, 'Bob'),(3, 'Charlie');
+
+INSERT INTO N_Roll_Call (roll_no, student_name) VALUES (2, 'Bob'),(4, 'David'),(5, 'Eve');
+
+
+DELIMITER $$
+CREATE PROCEDURE merge_roll_call()
+BEGIN
+DECLARE v_roll_no INT;
+DECLARE v_student_name VARCHAR(100);
+DECLARE done INT DEFAULT 0;
+DECLARE roll_call_cursor CURSOR FOR
+SELECT roll_no, student_name FROM N_Roll_Call;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+OPEN roll_call_cursor;
+read_loop: LOOP
+FETCH roll_call_cursor INTO v_roll_no, v_student_name;
+IF done THEN
+LEAVE read_loop;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM O_Roll_Call WHERE roll_no = v_roll_no) THEN
+INSERT INTO O_Roll_Call (roll_no, student_name)
+VALUES (v_roll_no, v_student_name);
+END IF;
+END LOOP;
+CLOSE roll_call_cursor;
+COMMIT;
+SELECT 'Merge complete. New records inserted where applicable.' AS result;
+END $$
+
+mysql> DELIMITER ;
+mysql> CALL merge_roll_call();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT * FROM O_Roll_Call;
+SELECT * FROM N_Roll_Call;

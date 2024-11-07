@@ -1,0 +1,97 @@
+// Use or create the database
+use libraryDB;
+
+// Insert sample data into the books collection (this is optional if you already have data)
+db.books.insertMany([
+    { title: "Book1", author: "Author1", genre: "Fiction", price: 250, published_date: new Date("2010-01-01") },
+    { title: "Book2", author: "Author2", genre: "Non-Fiction", price: 300, published_date: new Date("2012-05-05") },
+    { title: "Book3", author: "Author1", genre: "Mystery", price: 400, published_date: new Date("2011-11-11") },
+    { title: "Book4", author: "Author3", genre: "Sci-Fi", price: 150, published_date: new Date("2013-08-08") },
+    { title: "Book5", author: "Author2", genre: "Fiction", price: 500, published_date: new Date("2015-03-03") }
+]);
+
+// Query 1: Find the average price of all books
+print("Average price of all books:");
+db.books.aggregate([
+    {
+        $group: {
+            _id: null,
+            averagePrice: { $avg: "$price" }
+        }
+    },
+    {
+        $project: { _id: 0, averagePrice: 1 }
+    }
+]);
+
+// Query 2: Find the count of books in each genre
+print("Count of books in each genre:");
+db.books.aggregate([
+    {
+        $group: {
+            _id: "$genre",
+            count: { $sum: 1 }
+        }
+    },
+    {
+        $project: { genre: "$_id", count: 1, _id: 0 }
+    }
+]);
+
+// Query 3: For each genre, find the most expensive book
+print("Most expensive book in each genre:");
+db.books.aggregate([
+    {
+        $sort: { price: -1 }
+    },
+    {
+        $group: {
+            _id: "$genre",
+            mostExpensiveBook: { $first: "$$ROOT" }
+        }
+    },
+    {
+        $project: { genre: "$_id", mostExpensiveBook: 1, _id: 0 }
+    }
+]);
+
+// Query 4: Find the authors who have written the maximum books
+print("Authors with the maximum number of books:");
+db.books.aggregate([
+    {
+        $group: {
+            _id: "$author",
+            bookCount: { $sum: 1 }
+        }
+    },
+    {
+        $sort: { bookCount: -1 }
+    },
+    {
+        $limit: 1
+    },
+    {
+        $project: { author: "$_id", bookCount: 1, _id: 0 }
+    }
+]);
+
+// Query 5: Sort the books by published_date in descending order
+print("Books sorted by published_date in descending order:");
+db.books.aggregate([
+    {
+        $sort: { published_date: -1 }
+    }
+]);
+
+// Query 6: Sort the books by price in ascending order
+print("Books sorted by price in ascending order:");
+db.books.aggregate([
+    {
+        $sort: { price: 1 }
+    }
+]);
+
+// Query 7: Create an index on the title of the book and describe the index details
+db.books.createIndex({ title: 1 });
+print("Indexes on the books collection:");
+db.books.getIndexes();

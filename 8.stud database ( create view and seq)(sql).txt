@@ -1,0 +1,94 @@
+-- Step 1: Create Database
+CREATE DATABASE studs;
+USE studs;
+
+-- Step 2: Create Student Table
+CREATE TABLE Students (
+    student_id INT PRIMARY KEY,
+    student_name VARCHAR(50) NOT NULL,
+    class VARCHAR(20) NOT NULL,
+    address VARCHAR(100),
+    grades DECIMAL(5, 2),
+    enrolment_date DATE
+);
+
+-- Step 3: Create Subjects Table
+CREATE TABLE Subjects (
+    subject_id INT PRIMARY KEY AUTO_INCREMENT,
+    subject_name VARCHAR(50) NOT NULL
+);
+
+-- Step 4: Create Attendance Table
+CREATE TABLE Attendance (
+    attendance_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT,
+    subject_id INT,
+    attendance_date DATE NOT NULL,
+    status ENUM('Present', 'Absent') NOT NULL,
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (subject_id) REFERENCES Subjects(subject_id)
+);
+
+-- Step 5: Create a Sequence for Unique Student IDs
+-- Note: In MySQL, sequences are not directly supported; instead, use AUTO_INCREMENT on the primary key
+-- In PostgreSQL, you would do this:
+-- CREATE SEQUENCE student_id_seq START WITH 1 INCREMENT BY 1;
+
+-- Insert Students using the Sequence (if using PostgreSQL)
+-- INSERT INTO Students (student_id, student_name, class, address, grades, enrolment_date)
+-- VALUES (nextval('student_id_seq'), 'John Doe', '10th', '123 Main St', 85.00, '2023-09-01');
+
+-- Step 6: Create Views
+-- View for Summarized Student Performance
+CREATE VIEW StudentPerformance AS
+SELECT 
+    student_name,
+    class,
+    grades,
+    enrolment_date
+FROM 
+    Students;
+
+-- View for Attendance Summary
+CREATE VIEW AttendanceSummary AS
+SELECT 
+    s.student_name,
+    sub.subject_name,
+    COUNT(a.status) AS total_classes,
+    SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS classes_attended
+FROM 
+    Attendance a
+JOIN 
+    Students s ON a.student_id = s.student_id
+JOIN 
+    Subjects sub ON a.subject_id = sub.subject_id
+GROUP BY 
+    s.student_name, sub.subject_name;
+
+-- Step 7: Create Index on Student Name
+CREATE INDEX idx_student_name ON Students(student_name);
+
+-- Insert Sample Data
+INSERT INTO Students (student_id, student_name, class, address, grades, enrolment_date)
+VALUES 
+(1, 'John Doe', '10th', '123 Main St', 85.00, '2023-09-01'),
+(2, 'Jane Smith', '10th', '456 Maple Ave', 90.50, '2023-09-01'),
+(3, 'Alice Johnson', '11th', '789 Oak St', 88.75, '2022-09-01');
+
+INSERT INTO Subjects (subject_name) 
+VALUES 
+('Mathematics'), 
+('Science'), 
+('History');
+
+INSERT INTO Attendance (student_id, subject_id, attendance_date, status)
+VALUES 
+(1, 1, '2023-09-01', 'Present'),
+(1, 2, '2023-09-02', 'Absent'),
+(2, 1, '2023-09-01', 'Present'),
+(2, 2, '2023-09-02', 'Present'),
+(3, 1, '2023-09-01', 'Absent');
+
+-- Querying Views
+SELECT * FROM StudentPerformance;
+SELECT * FROM AttendanceSummary;

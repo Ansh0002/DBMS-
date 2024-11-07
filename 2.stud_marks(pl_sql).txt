@@ -1,0 +1,33 @@
+create database pss1;
+
+use pss1;
+
+CREATE TABLE stud_marks ( name VARCHAR(50) PRIMARY KEY,total_marks INT);
+
+INSERT INTO stud_marks VALUES ("ABC", 950), ("PQR", 1025), ("XYZ", 1350), ("MNO", 875), ("GFG", 750);
+
+CREATE TABLE result (  roll INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(50), class VARCHAR(50), FOREIGN KEY (name) REFERENCES stud_marks(name));
+
+DELIMITER $$
+CREATE PROCEDURE grade1(IN p_name VARCHAR(50))
+BEGIN
+DECLARE p_total INT;
+DECLARE p_class VARCHAR(50);
+SELECT total_marks INTO p_total FROM stud_marks WHERE name = p_name;
+IF p_total >= 990 AND p_total <= 1500 THEN  SET p_class = 'Distinction';
+ELSEIF p_total >= 900 AND p_total <= 989 THEN  SET p_class = 'First Class';
+ELSEIF p_total >= 825 AND p_total <= 899 THEN  SET p_class = 'Higher Second Class';
+ELSE SET p_class = 'Fail';
+END IF;
+INSERT INTO result (name, class) VALUES (p_name, p_class);
+END $$
+
+DELIMITER ;
+
+
+CALL grade1("ABC");
+CALL grade1("PQR");
+CALL grade1("GFG");
+
+
+SELECT * FROM result;

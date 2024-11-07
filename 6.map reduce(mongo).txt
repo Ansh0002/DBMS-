@@ -1,0 +1,29 @@
+
+use yourDatabaseName;
+
+
+db.customer.insertMany([
+    { cid: 1, cname: "John Doe", amount: 150.75, product_name: "Laptop" },
+    { cid: 2, cname: "Jane Smith", amount: 200.00, product_name: "Smartphone" },
+    { cid: 1, cname: "John Doe", amount: 50.00, product_name: "Mouse" },
+    { cid: 3, cname: "Alice Johnson", amount: 300.00, product_name: "Tablet" }
+]);
+
+
+var mapFunction = function() {
+    emit(this.cid, this.amount);
+};
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
+db.customer.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {
+        out: "total_spent_by_customer",
+        finalize: function(key, reducedValue) {
+            return { total_amount: reducedValue };
+        }
+    }
+);
+db.total_spent_by_customer.find().pretty();

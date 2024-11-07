@@ -1,0 +1,12 @@
+# Update the system
+sudo apt update
+
+# Install MongoDB
+sudo apt install -y mongodb
+
+
+sudo systemctl start mongodb
+
+sudo systemctl enable mongodb
+
+mongo
